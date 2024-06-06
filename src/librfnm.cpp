@@ -1,5 +1,5 @@
 #include <librfnm/librfnm.h>
-#include <spdlog/spdlog.h>
+#include <spdlog.h>
 #include <libusb-1.0/libusb.h>
 
 struct _librfnm_usb_handle {
