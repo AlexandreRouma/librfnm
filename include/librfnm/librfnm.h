@@ -205,6 +205,9 @@ struct _librfnm_usb_handle;
 class librfnm {
 public:
     MSDLL explicit librfnm(enum librfnm_transport transport, std::string address = "", enum librfnm_debug_level dbg = LIBRFNM_DEBUG_NONE);
+#ifdef __ANDROID__
+    MSDLL explicit librfnm(int sys_dev, enum librfnm_debug_level dbg = LIBRFNM_DEBUG_NONE);
+#endif
     MSDLL ~librfnm();
 
     MSDLL static std::vector<struct rfnm_dev_hwinfo> find(enum librfnm_transport transport, std::string address = "", int bind = 0);

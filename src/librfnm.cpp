@@ -550,6 +550,102 @@ exit:
     return;
 }
 
+#ifdef __ANDROID__
+MSDLL librfnm::librfnm(int sys_dev, enum librfnm_debug_level dbg) {
+    librfnm_rx_s.qbuf_cnt = 0;
+
+    s = (struct librfnm_status*)calloc(1, sizeof(struct librfnm_status));
+    usb_handle = new _librfnm_usb_handle;
+
+    int cnt = 0;
+    int dev_cnt = 0;
+    int r;
+    std::vector<struct rfnm_dev_hwinfo> found;
+
+#if LIBUSB_API_VERSION >= 0x0100010A
+    r = libusb_init_context(nullptr, nullptr, 0);
+#else
+    r = libusb_init(nullptr);
+#endif
+    if (r < 0) {
+        spdlog::error("RFNMDevice::activateStream() -> failed to initialize libusb");
+        return;
+    }
+
+    r = libusb_wrap_sys_device(nullptr, sys_dev, &usb_handle->primary);
+    if (r) {
+        spdlog::error("Found RFNM device, but couldn't open it {}", r);
+        continue;
+    }
+
+    if (address.length()) {
+        uint8_t sn[9];
+        if (libusb_get_string_descriptor_ascii(usb_handle->primary, desc.iSerialNumber, sn, 9) >= 0) {
+            sn[8] = '\0';
+            if (strcmp((const char*)sn, address.c_str())) {
+                spdlog::info("This serial {} doesn't match the requested {}", (const char*)sn, address);
+                libusb_close(usb_handle->primary);
+                continue;
+            }
+        }
+        else {
+            spdlog::error("Couldn't read serial descr");
+            libusb_close(usb_handle->primary);
+            continue;
+        }
+    }
+
+    if (libusb_get_device_speed(libusb_get_device(usb_handle->primary)) < LIBUSB_SPEED_SUPER) {
+        spdlog::error("You are connected using USB 2.0 (480 Mbps), however USB 3.0 (5000 Mbps) is required. "
+                "Please make sure that the cable and port you are using can work with USB 3.0 SuperSpeed");
+        libusb_close(usb_handle->primary);
+        continue;
+    }
+
+    r = libusb_claim_interface(usb_handle->primary, 0);
+    if (r < 0) {
+        spdlog::error("Found RFNM device, but couldn't claim the interface, {}, {}", r, libusb_strerror(r));
+        libusb_close(usb_handle->primary);
+        continue;
+    }
+
+    s->transport_status.theoretical_mbps = 3500;
+
+    spdlog::info("Max theoretical transport speed is {} Mbps", s->transport_status.theoretical_mbps);
+
+    r = libusb_control_transfer(usb_handle->primary, LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR,
+            RFNM_B_REQUEST, RFNM_GET_SM_RESET, 0, NULL, 0, 500);
+    if (r < 0) {
+        spdlog::error("Couldn't reset state machine");
+        return;
+    }
+
+    if (get(LIBRFNM_REQ_ALL)) {
+        return;
+    }
+
+    libusb_free_device_list(devs, 1);
+
+    for (int8_t i = 0; i < LIBRFNM_THREAD_COUNT; i++) {
+        librfnm_thread_data[i].ep_id = i + 1;
+        librfnm_thread_data[i].rx_active = 0;
+        librfnm_thread_data[i].tx_active = 0;
+        librfnm_thread_data[i].shutdown_req = 0;
+    }
+
+    for (int i = 0; i < LIBRFNM_THREAD_COUNT; i++) {
+        librfnm_thread_c[i] = std::thread(&librfnm::threadfn, this, i);
+    }
+
+    return;
+
+exit:
+    libusb_free_device_list(devs, 1);
+    libusb_exit(NULL);
+    return;
+}
+#endif
+
 MSDLL librfnm::~librfnm() {
 
     for (int8_t i = 0; i < LIBRFNM_THREAD_COUNT; i++) {
