@@ -324,11 +324,7 @@ MSDLL std::vector<struct rfnm_dev_hwinfo> librfnm::find(enum librfnm_transport t
     std::vector<struct rfnm_dev_hwinfo> found = {};
     libusb_device** devs = NULL;
 
-#if LIBUSB_API_VERSION >= 0x0100010A
-    r = libusb_init_context(nullptr, nullptr, 0);
-#else
     r = libusb_init(nullptr);
-#endif
     if (r < 0) {
         spdlog::error("RFNMDevice::activateStream() -> failed to initialize libusb");
         goto exit;
@@ -430,11 +426,7 @@ MSDLL librfnm::librfnm(enum librfnm_transport transport, std::string address, en
     std::vector<struct rfnm_dev_hwinfo> found;
     libusb_device** devs = NULL;
 
-#if LIBUSB_API_VERSION >= 0x0100010A
-    r = libusb_init_context(nullptr, nullptr, 0);
-#else
     r = libusb_init(nullptr);
-#endif
     if (r < 0) {
         spdlog::error("RFNMDevice::activateStream() -> failed to initialize libusb");
         goto error;
