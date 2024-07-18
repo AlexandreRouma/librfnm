@@ -72,7 +72,11 @@ configure_file(${CMAKE_SOURCE_DIR}/librfnm.pc.in ${CMAKE_CURRENT_BINARY_DIR}/lib
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/librfnm.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # Install the library
-install(TARGETS rfnm_static rfnm DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if (MSVC)
+    install(TARGETS rfnm_static rfnm)
+else ()
+    install(TARGETS rfnm_static rfnm DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif ()
 
 # Install the headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
