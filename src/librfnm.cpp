@@ -2,6 +2,17 @@
 #include <spdlog/spdlog.h>
 #include <libusb-1.0/libusb.h>
 
+librfnm_rx_buf_s::librfnm_rx_buf_s() {}
+
+librfnm_tx_buf_s::librfnm_tx_buf_s() {}
+
+librfnm_thread_data_s::librfnm_thread_data_s() {
+    ep_id = 0;
+    tx_active = 0;
+    rx_active = 0;
+    shutdown_req = 0;
+}
+
 struct _librfnm_usb_handle {
     libusb_device_handle* primary{};
     libusb_device_handle* boost{};

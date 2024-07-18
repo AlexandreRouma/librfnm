@@ -164,7 +164,10 @@ public:
     }
 };
 
-struct librfnm_rx_buf_s {
+class librfnm_rx_buf_s {
+public:
+    librfnm_rx_buf_s();
+
     std::queue<struct librfnm_rx_buf*> in;
     std::priority_queue<struct librfnm_rx_buf*, std::vector<struct librfnm_rx_buf*>, librfnm_rx_buf_compare> out[4];
     std::mutex in_mutex;
@@ -178,7 +181,10 @@ struct librfnm_rx_buf_s {
     uint8_t last_benchmark_adc;
 };
 
-struct librfnm_tx_buf_s {
+class librfnm_tx_buf_s {
+public:
+    librfnm_tx_buf_s();
+
     std::queue<struct librfnm_tx_buf*> in;
     std::queue<struct librfnm_tx_buf*> out;
     std::mutex in_mutex;
@@ -189,7 +195,10 @@ struct librfnm_tx_buf_s {
     uint64_t qbuf_cnt;
 };
 
-struct librfnm_thread_data_s {
+class librfnm_thread_data_s {
+public:
+    librfnm_thread_data_s();
+
     int ep_id;
     int tx_active;
     int rx_active;
@@ -254,9 +263,9 @@ private:
     std::mutex librfnm_s_dev_status_mutex;
     std::mutex librfnm_s_transport_pp_mutex;
 
-    struct librfnm_rx_buf_s librfnm_rx_s = {};
-    struct librfnm_tx_buf_s librfnm_tx_s = {};
-    struct librfnm_thread_data_s librfnm_thread_data[LIBRFNM_THREAD_COUNT] = {};
+    librfnm_rx_buf_s librfnm_rx_s;
+    librfnm_tx_buf_s librfnm_tx_s;
+    librfnm_thread_data_s librfnm_thread_data[LIBRFNM_THREAD_COUNT];
 
     std::array<std::thread, LIBRFNM_THREAD_COUNT> librfnm_thread_c{};
 
