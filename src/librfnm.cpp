@@ -1,6 +1,7 @@
 #include <librfnm/librfnm.h>
 #include <spdlog/spdlog.h>
 #include <libusb-1.0/libusb.h>
+#include <chrono>
 
 librfnm_rx_buf_s::librfnm_rx_buf_s() {}
 
