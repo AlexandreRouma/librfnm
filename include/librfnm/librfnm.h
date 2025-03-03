@@ -9,6 +9,7 @@
 #include <math.h>
 #include <array>
 #include <algorithm>
+#include <chrono>
 #include "librfnm_api.h"
 
 #if defined(__GNUC__)
